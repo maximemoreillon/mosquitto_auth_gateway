@@ -93,7 +93,7 @@ app.post('/superuser', (req, res) => {
 app.post('/aclcheck', (req, res) => {
   // req.body.acc: 1 subscribe, 2 publish
 
-  const {username} = req.body
+  const {username, topic} = req.body
   if(topic.startsWith(`/${username}/`)) {
     console.log(`User ${username} is allowed to use topic ${topic}`)
     res.send('OK')
