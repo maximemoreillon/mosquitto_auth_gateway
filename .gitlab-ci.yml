@@ -1,5 +1,6 @@
 stages:
   - containerization
+  - deployment
 
 variables:
   APPLICATION_NAME: mosquitto-auth-gateway
@@ -17,3 +18,18 @@ containerization:
     - docker push ${DOCKER_IMAGE}
     # Cleanup
     - docker image rm ${DOCKER_IMAGE}
+
+deployment:
+  stage: deployment
+  tags:
+    - moreillon
+  script:
+    # create/update the deployment
+    - envsubst < kubernetes_manifest.yml | kubectl apply -f -
+    # Pull latest image of deployment
+    - kubectl rollout restart deployment/${APPLICATION_NAME}
+  environment:
+    name: production
+    kubernetes:
+      # NAMESPACE provided by GitLab
+      namespace: ${KUBERNETES_NAMESPACE}
