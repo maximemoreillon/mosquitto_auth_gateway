@@ -10,7 +10,7 @@ dotenv.config()
 const app = express()
 
 const APP_PORT = process.env.APP_PORT || 80
-const AUTHENTICATION_API_URL = process.env.AUTHENTICATION_API_URL || 'http://authentication'
+const USER_MANAGER_API_URL = process.env.USER_MANAGER_API_URL || 'http://user-manager'
 
 app.use(bodyParser.json())
 
@@ -18,12 +18,12 @@ app.get('/', (req, res) => {
   res.send({
     application_name: 'Mosquitto Auth Gateway',
     version: pjson.version,
-    authentication_api_url:  AUTHENTICATION_API_URL
+    user_manager_api_url:  USER_MANAGER_API_URL
   })
 })
 
 function get_user_using_jwt(jwt){
-  const url = `${AUTHENTICATION_API_URL}/v2/whoami`
+  const url = `${USER_MANAGER_API_URL}/users/self`
   const options = {
     headers: {
       Authorization: `Bearer ${jwt}`

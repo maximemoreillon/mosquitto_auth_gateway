@@ -1,9 +1,9 @@
 # Mosquitto Auth Gateway
 
-A service to connect Mosquitto's mosquitto-go-auth plugin to the authentication api
+A service to connect Mosquitto's mosquitto-go-auth plugin to the user manager API
 
 ## Environment variables
 
 | Variable | Description |
 | --- | --- |
-| AUTHENTICATION_API_URL | The URL of the authentication service |
+| USER_MANAGER_API_URL | The URL of the user management service |
