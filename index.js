@@ -36,6 +36,7 @@ function user_is_superuser(user){
   return user.properties?.isAdmin
     ?? user.admin
     ?? user.isAdmin
+    ?? user.administrator
 }
 
 function get_user_id(user){
