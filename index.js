@@ -33,7 +33,7 @@ function get_user_using_jwt(jwt){
 }
 
 function login(credentials){
-  const url = `${USER_MANAGER_API_URL}/login`
+  const url = `${USER_MANAGER_API_URL}/auth/login`
   return axios.post(url, credentials)
 }
 
