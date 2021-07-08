@@ -9,7 +9,7 @@ dotenv.config()
 
 const app = express()
 
-const APP_PORT = process.env.APP_PORT
+const APP_PORT = process.env.APP_PORT || 80
 const AUTHENTICATION_API_URL = process.env.AUTHENTICATION_API_URL || 'http://authentication'
 
 app.use(bodyParser.json())
@@ -100,9 +100,6 @@ app.post('/aclcheck', (req, res) => {
     res.status(403).send(error)
   })
 })
-
-
-
 
 
 app.listen(APP_PORT, () => {
