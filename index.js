@@ -39,7 +39,6 @@ function login(credentials){
 }
 
 function user_is_superuser(user){
-  return false
   return user.properties?.isAdmin
     ?? user.admin
     ?? user.isAdmin
@@ -51,7 +50,7 @@ function get_user_id(user){
 }
 
 function get_username(user){
-  return user.username ?? user.properties.username
+  return user.username ?? user.properties?.username
 }
 
 app.post('/getuser', (req, res) => {
@@ -64,12 +63,13 @@ app.post('/getuser', (req, res) => {
 
 
   promise.then(({data}) => {
-    console.log(`Successful connection from user`)
     res.send('OK')
+    if(password === 'jwt') console.log(`Successful connection from user ${get_username(data)} using JWT`)
+    else console.log(`Successful connection from user ${username} using credentials`)
    })
   .catch(error => {
     res.status(403)
-    if(error.response) console.log(error.response.data)
+    if(error.response) console.log(error.response.data.message)
     else console.log(error)
   })
 
@@ -96,7 +96,7 @@ app.post('/superuser', (req, res) => {
   })
   .catch(error => {
     res.status(403)
-    if(error.response) console.log(error.response.data)
+    if(error.response) console.log(error.response.data.message)
     else console.log(error)
   })
 })
