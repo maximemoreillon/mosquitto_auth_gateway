@@ -68,8 +68,9 @@ app.post('/getuser', (req, res) => {
     res.send('OK')
    })
   .catch(error => {
-    console.log(error)
-    res.status(403).send(error)
+    res.status(403)
+    if(error.response) console.log(error.response.data)
+    else console.log(error)
   })
 
 })
@@ -94,8 +95,9 @@ app.post('/superuser', (req, res) => {
 
   })
   .catch(error => {
-    console.log(error)
-    res.status(403).send(error)
+    res.status(403)
+    if(error.response) console.log(error.response.data)
+    else console.log(error)
   })
 })
 
