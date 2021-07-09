@@ -69,7 +69,7 @@ app.post('/getuser', (req, res) => {
     else console.log(`Successful connection from user ${username} using credentials`)
    })
   .catch(error => {
-    res.status(403)
+    res.status(403).send('Not OK')
     if(error.response) console.log(error.response.data.message)
     else console.log(error)
   })
