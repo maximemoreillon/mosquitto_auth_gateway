@@ -22,6 +22,7 @@ app.use(bodyParser.json())
 app.get('/', (req, res) => {
   res.send({
     application_name: 'Mosquitto Auth Gateway',
+    author: 'Maxime MOREILLON',
     version: pjson.version,
     user_manager_api_url:  USER_MANAGER_API_URL
   })
@@ -85,18 +86,18 @@ app.post('/superuser', (req, res) => {
   .then(({data}) => {
 
     if(user_is_superuser(data)) {
-      console.log(`User is superuser`)
+      console.log(`User ${get_username(data)} is superuser`)
       res.send('OK')
     }
     else {
-      console.log(`User is NOT superuser`)
+      console.log(`User ${get_username(data)} is NOT superuser`)
       res.status(403).send('Not OK')
     }
 
   })
   .catch(error => {
     res.status(403)
-    if(error.response) console.log(error.response.data.message)
+    if(error.response) console.log(`Could not determine if user is superuser: ${error.response.data.message}`)
     else console.log(error)
   })
 })
@@ -135,5 +136,5 @@ app.post('/aclcheck', (req, res) => {
 
 
 app.listen(APP_PORT, () => {
-  console.log(`Mosquitto Auth Gateway listening on port ${APP_PORT}`)
+  console.log(`Mosquitto Auth Gateway v${pjson.version} listening on port ${APP_PORT}`)
 })
