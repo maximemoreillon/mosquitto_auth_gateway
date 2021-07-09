@@ -96,8 +96,8 @@ app.post('/superuser', (req, res) => {
 
   })
   .catch(error => {
-    res.status(403)
-    if(error.response) console.log(`Could not determine if user is superuser: ${error.response.data.message}`)
+    res.status(403).send('Not OK')
+    if(error.response) console.log(`Could not determine if user ${username} is superuser: ${error.response.data.message}`)
     else console.log(error)
   })
 })
