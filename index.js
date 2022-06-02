@@ -1,8 +1,9 @@
 const express = require('express')
 const dotenv = require('dotenv')
 const axios = require('axios')
+const apiMetrics = require('prometheus-api-metrics')
 const cors = require('cors')
-const pjson = require('./package.json')
+const {version} = require('./package.json')
 
 dotenv.config()
 
@@ -21,12 +22,14 @@ const app = express()
 
 app.use(cors())
 app.use(express.json())
+app.use(apiMetrics())
+
 
 app.get('/', (req, res) => {
   res.send({
     application_name: 'Mosquitto Auth Gateway',
     author: 'Maxime MOREILLON',
-    version: pjson.version,
+    version,
     user_manager_api_url:  USER_MANAGER_API_URL
   })
 })
