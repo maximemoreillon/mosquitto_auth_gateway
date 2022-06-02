@@ -1,5 +1,4 @@
 const express = require('express')
-const bodyParser = require('body-parser')
 const dotenv = require('dotenv')
 const axios = require('axios')
 const cors = require('cors')
@@ -7,17 +6,21 @@ const pjson = require('./package.json')
 
 dotenv.config()
 
+
 // Parsing environment variables
-const APP_PORT = process.env.APP_PORT || 80
-const USER_MANAGER_API_URL = process.env.USER_MANAGER_API_URL
-  || process.env.USER_MANAGER_API_URL
-  ||  'http://user-manager'
-const IDENTIFICATION_URI = process.env.IDENTIFICATION_URI || '/users/self'
-const LOGIN_URI = process.env.LOGIN_URI || '/auth/login'
+const {
+  APP_PORT = 80,
+  USER_MANAGER_API_URL = 'http://user-manager',
+  IDENTIFICATION_URI = '/users/self',
+  LOGIN_URI = '/auth/login',
+} = process.env
+
+
 
 const app = express()
 
-app.use(bodyParser.json())
+app.use(cors())
+app.use(express.json())
 
 app.get('/', (req, res) => {
   res.send({
