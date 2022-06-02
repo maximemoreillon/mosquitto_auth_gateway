@@ -142,5 +142,5 @@ app.post('/aclcheck', (req, res) => {
 
 
 app.listen(APP_PORT, () => {
-  console.log(`Mosquitto Auth Gateway v${pjson.version} listening on port ${APP_PORT}`)
+  console.log(`Mosquitto Auth Gateway v${version} listening on port ${APP_PORT}`)
 })
