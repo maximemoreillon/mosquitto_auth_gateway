@@ -26,14 +26,12 @@ build:
     - docker image rm ${CONTAINER_IMAGE}
 
 deploy:
+  only:
+    - master
   stage: deploy
   tags:
     - dind
+  before_script:
+    - kubectl config use-context moreillon_ci/moreillon_k8s/kubernetes-agent:cloud
   script:
-    # create/update the deployment
-    - envsubst < kubernetes_manifest.yml | kubectl apply -f -
-  environment:
-    name: production
-    kubernetes:
-      # NAMESPACE provided by GitLab
-      namespace: ${KUBERNETES_NAMESPACE}
+    - envsubst < kubernetes_manifest.yml | kubectl apply -n ${KUBERNETES_NAMESPACE} -f -
