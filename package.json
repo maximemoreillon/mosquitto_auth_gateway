@@ -1,18 +1,19 @@
 {
   "name": "mosquitto_auth_test",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Maxime MOREILLON",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.4",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.18.1",
+    "http-errors": "^2.0.0",
     "prom-client": "^14.0.1",
     "prometheus-api-metrics": "^3.2.1"
   }

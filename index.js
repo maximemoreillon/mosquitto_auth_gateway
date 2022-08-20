@@ -3,7 +3,7 @@ const dotenv = require('dotenv')
 const axios = require('axios')
 const apiMetrics = require('prometheus-api-metrics')
 const cors = require('cors')
-const {version} = require('./package.json')
+const {version, author} = require('./package.json')
 
 dotenv.config()
 
@@ -28,7 +28,7 @@ app.use(apiMetrics())
 app.get('/', (req, res) => {
   res.send({
     application_name: 'Mosquitto Auth Gateway',
-    author: 'Maxime MOREILLON',
+    author,
     version,
     user_manager_api_url:  USER_MANAGER_API_URL
   })
@@ -64,10 +64,7 @@ app.post('/getuser', (req, res) => {
 
   const {username, password} = req.body
 
-  let promise
-  if(password === 'jwt') promise = get_user_using_jwt(username)
-  else promise = login({username, password})
-
+  const promise = password === 'jwt' ? get_user_using_jwt(username) : login({ username, password })
 
   promise.then(({data}) => {
     res.send('OK')
@@ -76,8 +73,8 @@ app.post('/getuser', (req, res) => {
    })
   .catch(error => {
     res.status(403).send('Not OK')
-    if(error.response) console.log(error.response.data.message)
-    else console.log(error)
+    if(error.response) console.error(error.response.data.message)
+    else console.error(error)
   })
 
 })
@@ -96,15 +93,15 @@ app.post('/superuser', (req, res) => {
       res.send('OK')
     }
     else {
-      console.log(`User ${get_username(data)} is NOT superuser`)
+      console.error(`User ${get_username(data)} is NOT superuser`)
       res.status(403).send('Not OK')
     }
 
   })
   .catch(error => {
     res.status(403).send('Not OK')
-    if(error.response) console.log(`Could not determine if user ${username} is superuser: ${error.response.data.message}`)
-    else console.log(error)
+    if (error.response) console.error(`Could not determine if user ${username} is superuser: ${error.response.data.message}`)
+    else console.error(error)
   })
 })
 
@@ -126,17 +123,12 @@ app.post('/aclcheck', (req, res) => {
       console.log(`User ${username} is NOT allowed to use topic ${topic}`)
       res.status(403).send('Not OK')
     }
+
   })
-  .catch(() => {
-    // The user
-    if(topic.startsWith(`/${username}/`)) {
-      console.log(`User ${username} is allowed to use topic ${topic}`)
-      res.send('OK')
-    }
-    else {
-      console.log(`User ${username} is NOT allowed to use topic ${topic}`)
-      res.status(403).send('Not OK')
-    }
+  .catch(error => {
+    res.status(403).send('Not OK')
+    if (error.response) console.error(`Could not determine if user ${username} is allowed to use topic ${topic}: ${error.response.data.message}`)
+    else console.error(error)
   })
 })
 
