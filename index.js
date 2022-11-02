@@ -38,8 +38,8 @@ app.get('/', (req, res) => {
   })
 })
 
-const get_user_using_jwt = (jwt) => {
-  const headers = { Authorization: `Bearer ${jwt}` }
+const get_user_using_token = (token) => {
+  const headers = { Authorization: `Bearer ${token}` }
   return axios.get(IDENTIFICATION_URL, {headers})
 }
 
@@ -50,23 +50,13 @@ const user_is_superuser = (user) => user.admin
     ?? user.administrator
     ?? user.isAdministrator
 
-const get_user = async (username) => {
-  
-  const jwtDecodedUsername = jwt.decode(username)
-  console.log(jwtDecodedUsername)
-
-  throw createHttpError(501, 'Following not implemented')
-}
-
-
-
 app.post('/getuser', async (req, res, next) => {
 
-  // If password is 'jwt', username can be set to the user JWT
+  // If password is 'jwt' or 'token', username can be set to the user JWT
   const {username, password} = req.body
 
   try {
-    if (password === 'jwt') await get_user_using_jwt(username)
+    if (jwt.decode(username)) await get_user_using_token(username)
     else await login({ username, password })
     res.send('OK')
   } 
@@ -81,11 +71,11 @@ app.post('/superuser', async (req, res, next) => {
 
   // Note: Body only contains username and thus NOT password
   // Thus, superuser check only works when using JWT and not credentials
-  const { username: jwt} = req.body
+  const { username: token} = req.body
 
   try {
-    if (!jwt.decode(jwt)) throw 'Username is not jwt'
-    const { data: user} = await get_user_using_jwt(username)
+    if (!jwt.decode(token)) throw 'Username is not token'
+    const { data: user} = await get_user_using_token(username)
     if (!user_is_superuser(user)) throw createHttpError(403, `User is not administrator`)
     res.send('OK')
   } 
@@ -102,12 +92,12 @@ app.post('/aclcheck', async (req, res, next) => {
   // However, username can be JWT
   // acc: 1 subscribe, 2 publish ??
 
-  // if username is jwt, need to get actual username first
+  // if username is a JWT, need to get actual username first
   let actualUsername
 
   try {
-    if (!jwt.decode(username)) throw 'Username is not jwt'
-    const { data } = await get_user_using_jwt(username)
+    if (!jwt.decode(username)) throw 'Username is not token'
+    const { data } = await get_user_using_token(username)
     actualUsername = data.username
   } catch (error) {
     actualUsername = username
