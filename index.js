@@ -1,7 +1,7 @@
 const express = require('express')
 const dotenv = require('dotenv')
 const axios = require('axios')
-const apiMetrics = require('prometheus-api-metrics')
+// const apiMetrics = require('prometheus-api-metrics')
 const cors = require('cors')
 const {version, author} = require('./package.json')
 
@@ -19,7 +19,7 @@ const app = express()
 
 app.use(cors())
 app.use(express.json())
-app.use(apiMetrics())
+// app.use(apiMetrics())
 
 
 app.get('/', (req, res) => {
