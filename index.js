@@ -111,6 +111,8 @@ app.post('/aclcheck', async (req, res, next) => {
   let actualUsername
 
   try {
+    const decodedUsername = jwt.decode(username)
+    if (!decodedUsername) throw 'Username is not jwt'
     const { data } = await get_user_using_jwt(username)
     actualUsername = data.username
   } catch (error) {
