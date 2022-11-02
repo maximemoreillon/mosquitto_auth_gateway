@@ -33,7 +33,6 @@ app.get('/', (req, res) => {
     auth: {
       identification_url: IDENTIFICATION_URL,
       login_url: LOGIN_URL,
-      admin_token_set: !!ADMIN_TOEKN
     }
   })
 })
@@ -52,7 +51,7 @@ const user_is_superuser = (user) => user.admin
 
 app.post('/getuser', async (req, res, next) => {
 
-  // If password is 'jwt' or 'token', username can be set to the user JWT
+  // username can be a JWT
   const {username, password} = req.body
 
   try {
@@ -104,21 +103,25 @@ app.post('/aclcheck', async (req, res, next) => {
   }
 
   try {
-
     // Only allow users to manipulate topics that contain their username
     if (!topic.startsWith(`/${actualUsername}/`)) throw createHttpError(403, `User ${actualUsername} is not allowed to use topic ${topic}`)
-
-    console.log('Alcheck succeeded!')
     res.send('OK')
   }
   catch (error) {
-    console.log('alcheck failed')
-    console.log(error.response?.data)
     next(error)
   }
 
 
 })
+
+// Express error handler
+app.use((error, req, res, next) => {
+  console.error(error)
+  let { statusCode = 500, message = error } = error
+  if (isNaN(statusCode) || statusCode > 600) statusCode = 500
+  res.status(statusCode).send(message)
+})
+
 
 
 app.listen(APP_PORT, () => {
