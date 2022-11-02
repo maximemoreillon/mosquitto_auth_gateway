@@ -5,6 +5,7 @@ const axios = require('axios')
 const cors = require('cors')
 const {version, author} = require('./package.json')
 const createHttpError = require('http-errors')
+const jwt = require('jsonwebtoken')
 
 dotenv.config()
 
@@ -12,6 +13,7 @@ const {
   APP_PORT = 80,
   IDENTIFICATION_URL = 'http://user-manager/users/self',
   LOGIN_URL = 'http://user-manager/auth/login',
+  ADMIN_TOEKN
 } = process.env
 
 
@@ -31,7 +33,7 @@ app.get('/', (req, res) => {
     auth: {
       identification_url: IDENTIFICATION_URL,
       login_url: LOGIN_URL,
-
+      admin_token_set: !!ADMIN_TOEKN
     }
   })
 })
@@ -48,27 +50,19 @@ const user_is_superuser = (user) => user.admin
     ?? user.administrator
     ?? user.isAdministrator
 
-const get_user = async ({ username, password }) => {
-  let jwt
+const get_user = async (username) => {
+  
+  const jwtDecodedUsername = jwt.decode(username)
+  console.log(jwtDecodedUsername)
 
-  if (password === 'jwt') { 
-    jwt = username
-  }
-  else {
-    const { data } = await login({ username, password })
-    jwt = data.jwt
-  }
-
-  const { data: user } = await get_user_using_jwt(jwt)
-
-  return user
+  throw createHttpError(501, 'Following not implemented')
 }
+
+
 
 app.post('/getuser', async (req, res, next) => {
 
   const {username, password} = req.body
-
-  
 
   try {
     if (password === 'jwt') await get_user_using_jwt(username)
