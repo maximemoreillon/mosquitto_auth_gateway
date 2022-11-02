@@ -111,24 +111,15 @@ app.post('/aclcheck', async (req, res, next) => {
   // req.body.acc: 1 subscribe, 2 publish ??
 
   const { username, password, topic} = req.body
-
+  
   try {
 
     const user = await get_user({ username, password })
 
-    const username = get_username(user)
+    const actualUsername = get_username(user)
 
     // Only allow users to manipulate topics that contain their username
-    if (topic.startsWith(`/${username}/`)) {
-      console.log(`User ${username} is allowed to use topic ${topic}`)
-      res.send('OK')
-    }
-    else {
-      console.log(`User ${username} is NOT allowed to use topic ${topic}`)
-      res.status(403).send('Not OK')
-    }
-
-    console.log(`User is indeed an administrator`)
+    if (!topic.startsWith(`/${actualUsername}/`)) throw createHttpError(403, `User ${actualUsername} is not allowed to use topic ${topic}`)
 
     res.send('OK')
   }
