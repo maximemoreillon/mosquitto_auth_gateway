@@ -4,6 +4,7 @@ const axios = require('axios')
 // const apiMetrics = require('prometheus-api-metrics')
 const cors = require('cors')
 const {version, author} = require('./package.json')
+const createHttpError = require('http-errors')
 
 dotenv.config()
 
@@ -35,92 +36,121 @@ app.get('/', (req, res) => {
   })
 })
 
-function get_user_using_jwt(jwt){
-  const url = IDENTIFICATION_URL
+const get_user_using_jwt = (jwt) => {
   const headers = { Authorization: `Bearer ${jwt}` }
-  return axios.get(url, {headers})
+  return axios.get(IDENTIFICATION_URL, {headers})
 }
 
-function login(credentials){
-  const url = LOGIN_URL
-  return axios.post(url, credentials)
-}
+const login = credentials => axios.post(LOGIN_URL, credentials)
+
 
 function user_is_superuser(user){
-  return user.properties?.isAdmin
-    ?? user.admin
+  return user.admin
     ?? user.isAdmin
     ?? user.administrator
+    ?? user.isAdministrator
 }
 
-function get_user_id(user){
-  return user.identity ?? user._id
-}
 
 function get_username(user){
   return user.username ?? user.properties?.username
 }
 
-app.post('/getuser', (req, res) => {
+app.post('/getuser', async (req, res, next) => {
 
   const {username, password} = req.body
 
-  if(password === 'jwt') console.log(`User is trying to authenticate using jwt`)
-  else console.log(`User is trying to authenticate using username and password, with username being ${username}`)
-
-
-  const promise = password === 'jwt' ? get_user_using_jwt(username) : login({ username, password })
-
-  promise.then(({data}) => {
-    res.send('OK')
-    if(password === 'jwt') console.log(`Successful connection from user ${get_username(data)} using JWT`)
-    else console.log(`Successful connection from user ${username} using credentials`)
-   })
-  .catch(error => {
-    res.status(403).send('Not OK')
-    if(error.response) console.error(error.response.data.message)
-    else console.error(error)
-  })
-
-})
-
-app.post('/superuser', (req, res) => {
-
-  // This only works with JWTs
-
-  const {username} = req.body
-
-  get_user_using_jwt(username)
-  .then(({data}) => {
-
-    if(user_is_superuser(data)) {
-      console.log(`User ${get_username(data)} is superuser`)
-      res.send('OK')
+  try {
+    if (password === 'jwt') {
+      console.log(`User is trying to authenticate using jwt`)
+      await get_user_using_jwt(username)
+      console.log(`Successful auth using JWT`)
     }
     else {
-      console.error(`User ${get_username(data)} is NOT superuser`)
-      res.status(403).send('Not OK')
+      console.log(`User is trying to authenticate using credentials, with username being ${username}`)
+      await login({ username, password })
+      console.log(`Successful auth using credentials`)
     }
 
-  })
-  .catch(error => {
-    res.status(403).send('Not OK')
-    if (error.response) console.error(`Could not determine if user ${username} is superuser: ${error.response.data}`)
-    else console.error(error)
-  })
+    res.send('OK')
+  } catch (error) {
+    next(error)
+  }
+
 })
 
-app.post('/aclcheck', (req, res) => {
+app.post('/superuser', async (req, res, next) => {
+
+  const { username, password } = req.body
+
+  let user
+
+  // This is ugly and needs refactoring
+  try {
+    if (password === 'jwt') {
+      console.log(`Checking if administrator via JWT`)
+      const { data } = await get_user_using_jwt(username)
+      console.log(`JWT is valid`)
+      user = data
+
+    }
+    else {
+      console.log(`Checking if administrator using credentials, with username being ${username}`)
+
+      const { data: { jwt } } = await login({ username, password })
+      console.log(`Successful auth using credentials`)
+
+      console.log(`Retrieving user information of user ${username} via JWT`)
+      const { data } = await get_user_using_jwt(jwt)
+      user = data
+
+    }
+
+    if (!user_is_superuser) throw createHttpError(403, `User is not administrator`)
+    console.log(`User is indeed an administrator`)
+
+    res.send('OK')
+  } 
+  catch (error) {
+    next(error)
+  }
+
+})
+
+app.post('/aclcheck', async (req, res, next) => {
   // req.body.acc: 1 subscribe, 2 publish ??
+  // Only seems to work with JWTS
 
-  const {username, topic} = req.body
+  const { username, password, topic} = req.body
 
+  let user
 
-  get_user_using_jwt(username)
-  .then(({data}) => {
+  // This is ugly and needs refactoring
+  try {
+
+    if (password === 'jwt') {
+      console.log(`Checking if administrator via JWT`)
+      const { data } = await get_user_using_jwt(username)
+      console.log(`JWT is valid`)
+      user = data
+
+    }
+    else {
+      console.log(`Checking if administrator using credentials, with username being ${username}`)
+
+      const { data: { jwt } } = await login({ username, password })
+      console.log(`Successful auth using credentials`)
+
+      console.log(`Retrieving user information of user ${username} via JWT`)
+      const { data } = await get_user_using_jwt(jwt)
+      user = data
+
+    }
+
     const username = get_username(data)
 
-    if(topic.startsWith(`/${username}/`)) {
+    // Only allow users to manipulate topics that contain their username
+    if (topic.startsWith(`/${username}/`)) {
       console.log(`User ${username} is allowed to use topic ${topic}`)
       res.send('OK')
     }
@@ -129,12 +159,15 @@ app.post('/aclcheck', (req, res) => {
       res.status(403).send('Not OK')
     }
 
-  })
-  .catch(error => {
-    res.status(403).send('Not OK')
-    if (error.response) console.error(`Could not determine if user ${username} is allowed to use topic ${topic}: ${error.response.data}`)
-    else console.error(error)
-  })
+    console.log(`User is indeed an administrator`)
+
+    res.send('OK')
+  }
+  catch (error) {
+    next(error)
+  }
+
+
 })
 
 
