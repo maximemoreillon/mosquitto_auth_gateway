@@ -13,7 +13,6 @@ const {
   APP_PORT = 80,
   IDENTIFICATION_URL = 'http://user-manager/users/self',
   LOGIN_URL = 'http://user-manager/auth/login',
-  ADMIN_TOEKN
 } = process.env
 
 
