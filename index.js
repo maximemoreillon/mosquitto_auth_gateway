@@ -65,6 +65,10 @@ app.post('/getuser', (req, res) => {
 
   const {username, password} = req.body
 
+  if(password === 'jwt') console.log(`User is trying to authenticate using jwt`)
+  else console.log(`User is trying to authenticate using username and password, with username being ${username}`)
+
+
   const promise = password === 'jwt' ? get_user_using_jwt(username) : login({ username, password })
 
   promise.then(({data}) => {
