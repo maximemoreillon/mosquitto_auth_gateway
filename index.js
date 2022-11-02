@@ -68,6 +68,8 @@ app.post('/getuser', async (req, res, next) => {
 
   const {username, password} = req.body
 
+  
+
   try {
     if (password === 'jwt') await get_user_using_jwt(username)
     else await login({ username, password })
@@ -83,6 +85,9 @@ app.post('/getuser', async (req, res, next) => {
 app.post('/superuser', async (req, res, next) => {
 
   const { username, password } = req.body
+
+  console.log('/superuser')
+  console.log(req.body)
 
   try {
     const user = await get_user({username, password})
@@ -101,6 +106,9 @@ app.post('/aclcheck', async (req, res, next) => {
   // req.body.acc: 1 subscribe, 2 publish ??
 
   const { username, password, topic} = req.body
+
+  console.log('/aclcheck')
+  console.log(req.body)
   
   try {
 
