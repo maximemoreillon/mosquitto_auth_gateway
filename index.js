@@ -43,17 +43,23 @@ const get_user_using_jwt = (jwt) => {
 
 const login = credentials => axios.post(LOGIN_URL, credentials)
 
-
-function user_is_superuser(user){
-  return user.admin
+const user_is_superuser = (user) => user.admin
     ?? user.isAdmin
     ?? user.administrator
     ?? user.isAdministrator
-}
 
+const get_user = async ({ username, password }) => {
+  let jwt
 
-function get_username(user){
-  return user.username ?? user.properties?.username
+  if (password === 'jwt') jwt = username
+  else {
+    const { data } = await login({ username, password })
+    jwt = data.jwt
+  }
+
+  const { data: user } = await get_user_using_jwt(jwt)
+
+  return user
 }
 
 app.post('/getuser', async (req, res, next) => {
@@ -79,19 +85,7 @@ app.post('/getuser', async (req, res, next) => {
 
 })
 
-const get_user = async ({username, password}) => {
-  let jwt
 
-  if (password === 'jwt') jwt = username
-  else {
-    const { data } = await login({ username, password })
-    jwt = data.jwt
-  }
-
-  const { data: user } = await get_user_using_jwt(jwt)
-
-  return user
-}
 app.post('/superuser', async (req, res, next) => {
 
   const { username, password } = req.body
@@ -116,10 +110,8 @@ app.post('/aclcheck', async (req, res, next) => {
 
     const user = await get_user({ username, password })
 
-    const actualUsername = get_username(user)
-
     // Only allow users to manipulate topics that contain their username
-    if (!topic.startsWith(`/${actualUsername}/`)) throw createHttpError(403, `User ${actualUsername} is not allowed to use topic ${topic}`)
+    if (!topic.startsWith(`/${user.username}/`)) throw createHttpError(403, `User ${user.username} is not allowed to use topic ${topic}`)
 
     res.send('OK')
   }
