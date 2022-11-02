@@ -51,7 +51,9 @@ const user_is_superuser = (user) => user.admin
 const get_user = async ({ username, password }) => {
   let jwt
 
-  if (password === 'jwt') jwt = username
+  if (password === 'jwt') { 
+    jwt = username
+  }
   else {
     const { data } = await login({ username, password })
     jwt = data.jwt
@@ -67,19 +69,11 @@ app.post('/getuser', async (req, res, next) => {
   const {username, password} = req.body
 
   try {
-    if (password === 'jwt') {
-      console.log(`User is trying to authenticate using jwt`)
-      await get_user_using_jwt(username)
-      console.log(`Successful auth using JWT`)
-    }
-    else {
-      console.log(`User is trying to authenticate using credentials, with username being ${username}`)
-      await login({ username, password })
-      console.log(`Successful auth using credentials`)
-    }
-
+    if (password === 'jwt') await get_user_using_jwt(username)
+    else await login({ username, password })
     res.send('OK')
-  } catch (error) {
+  } 
+  catch (error) {
     next(error)
   }
 
