@@ -9,8 +9,8 @@ dotenv.config()
 
 const {
   APP_PORT = 80,
-  IDENTIFICATION_URL = 'http://user-manager/v2/users/self',
-  LOGIN_URL = 'http://user-manager/v2/auth/login',
+  IDENTIFICATION_URL = 'http://user-manager/users/self',
+  LOGIN_URL = 'http://user-manager/auth/login',
 } = process.env
 
 
