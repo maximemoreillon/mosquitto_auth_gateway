@@ -62,6 +62,7 @@ const get_user = async (username) => {
 
 app.post('/getuser', async (req, res, next) => {
 
+  // If password is 'jwt', username can be set to the user JWT
   const {username, password} = req.body
 
   try {
@@ -79,10 +80,8 @@ app.post('/getuser', async (req, res, next) => {
 app.post('/superuser', async (req, res, next) => {
 
   // Note: Body only contains username and thus NOT password
+  // Thus, superuser check only works when using JWT and not credentials
   const { username } = req.body
-
-  console.log('/superuser')
-  console.log(req.headers)
 
   try {
     const user = await get_user({username, password})
@@ -90,8 +89,6 @@ app.post('/superuser', async (req, res, next) => {
     res.send('OK')
   } 
   catch (error) {
-    console.log('superuser check failed')
-    console.log(error.response?.data)
     next(error)
   }
 
@@ -99,20 +96,31 @@ app.post('/superuser', async (req, res, next) => {
 
 app.post('/aclcheck', async (req, res, next) => {
 
-  // req.body.acc: 1 subscribe, 2 publish ??
-
-  // Note: Body does NOT contain password
-  const { username, topic, acc} = req.body
-
   console.log('/aclcheck')
-  console.log(req.headers)
-  
+
+
+
+
+  const { username, topic, acc} = req.body
+  // Note: Body does NOT contain password
+  // However, username can be JWT
+  // acc: 1 subscribe, 2 publish ??
+
+
+  // if username is jwt, need to get actual username first
+  let actualUsername
+
+  try {
+    const { data } = await get_user_using_jwt(username)
+    actualUsername = data.username
+  } catch (error) {
+    actualUsername = username
+  }
+
   try {
 
-    const user = await get_user({ username, password })
-
     // Only allow users to manipulate topics that contain their username
-    if (!topic.startsWith(`/${user.username}/`)) throw createHttpError(403, `User ${user.username} is not allowed to use topic ${topic}`)
+    if (!topic.startsWith(`/${actualUsername}/`)) throw createHttpError(403, `User ${actualUsername} is not allowed to use topic ${topic}`)
 
     res.send('OK')
   }
