@@ -90,6 +90,8 @@ app.post('/superuser', async (req, res, next) => {
     res.send('OK')
   } 
   catch (error) {
+    console.log('superuser check failed')
+    console.log(error.response?.data)
     next(error)
   }
 
@@ -110,6 +112,8 @@ app.post('/aclcheck', async (req, res, next) => {
     res.send('OK')
   }
   catch (error) {
+    console.log('alcheck failed')
+    console.log(error.response?.data)
     next(error)
   }
 
