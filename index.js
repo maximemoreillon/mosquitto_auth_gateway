@@ -79,36 +79,26 @@ app.post('/getuser', async (req, res, next) => {
 
 })
 
+const get_user = async ({username, password}) => {
+  let jwt
+
+  if (password === 'jwt') jwt = username
+  else {
+    const { data } = await login({ username, password })
+    jwt = data.jwt
+  }
+
+  const { data: user } = await get_user_using_jwt(jwt)
+
+  return user
+}
 app.post('/superuser', async (req, res, next) => {
 
   const { username, password } = req.body
 
-  let user
-
-  // This is ugly and needs refactoring
   try {
-    if (password === 'jwt') {
-      console.log(`Checking if administrator via JWT`)
-      const { data } = await get_user_using_jwt(username)
-      console.log(`JWT is valid`)
-      user = data
-
-    }
-    else {
-      console.log(`Checking if administrator using credentials, with username being ${username}`)
-
-      const { data: { jwt } } = await login({ username, password })
-      console.log(`Successful auth using credentials`)
-
-      console.log(`Retrieving user information of user ${username} via JWT`)
-      const { data } = await get_user_using_jwt(jwt)
-      user = data
-
-    }
-
-    if (!user_is_superuser) throw createHttpError(403, `User is not administrator`)
-    console.log(`User is indeed an administrator`)
-
+    const user = await get_user({username, password})
+    if (!user_is_superuser(user)) throw createHttpError(403, `User is not administrator`)
     res.send('OK')
   } 
   catch (error) {
@@ -119,35 +109,14 @@ app.post('/superuser', async (req, res, next) => {
 
 app.post('/aclcheck', async (req, res, next) => {
   // req.body.acc: 1 subscribe, 2 publish ??
-  // Only seems to work with JWTS
 
   const { username, password, topic} = req.body
 
-  let user
-
-  // This is ugly and needs refactoring
   try {
 
-    if (password === 'jwt') {
-      console.log(`Checking if administrator via JWT`)
-      const { data } = await get_user_using_jwt(username)
-      console.log(`JWT is valid`)
-      user = data
+    const user = await get_user({ username, password })
 
-    }
-    else {
-      console.log(`Checking if administrator using credentials, with username being ${username}`)
-
-      const { data: { jwt } } = await login({ username, password })
-      console.log(`Successful auth using credentials`)
-
-      console.log(`Retrieving user information of user ${username} via JWT`)
-      const { data } = await get_user_using_jwt(jwt)
-      user = data
-
-    }
-
-    const username = get_username(data)
+    const username = get_username(user)
 
     // Only allow users to manipulate topics that contain their username
     if (topic.startsWith(`/${username}/`)) {
