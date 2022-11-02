@@ -7,13 +7,10 @@ const {version, author} = require('./package.json')
 
 dotenv.config()
 
-
-// Parsing environment variables
 const {
   APP_PORT = 80,
-  USER_MANAGER_API_URL = 'http://user-manager',
-  IDENTIFICATION_URI = '/users/self',
-  LOGIN_URI = '/auth/login',
+  IDENTIFICATION_URL = 'http://user-manager/v2/users/self',
+  LOGIN_URL = 'http://user-manager/v2/auth/login',
 } = process.env
 
 
@@ -30,18 +27,22 @@ app.get('/', (req, res) => {
     application_name: 'Mosquitto Auth Gateway',
     author,
     version,
-    user_manager_api_url:  USER_MANAGER_API_URL
+    auth: {
+      identification_url: IDENTIFICATION_URL,
+      login_url: LOGIN_URL,
+
+    }
   })
 })
 
 function get_user_using_jwt(jwt){
-  const url = `${USER_MANAGER_API_URL}${IDENTIFICATION_URI}`
+  const url = IDENTIFICATION_URL
   const headers = { Authorization: `Bearer ${jwt}` }
   return axios.get(url, {headers})
 }
 
 function login(credentials){
-  const url = `${USER_MANAGER_API_URL}${LOGIN_URI}`
+  const url = LOGIN_URL
   return axios.post(url, credentials)
 }
 
@@ -100,7 +101,7 @@ app.post('/superuser', (req, res) => {
   })
   .catch(error => {
     res.status(403).send('Not OK')
-    if (error.response) console.error(`Could not determine if user ${username} is superuser: ${error.response.data.message}`)
+    if (error.response) console.error(`Could not determine if user ${username} is superuser: ${error.response.data}`)
     else console.error(error)
   })
 })
@@ -127,7 +128,7 @@ app.post('/aclcheck', (req, res) => {
   })
   .catch(error => {
     res.status(403).send('Not OK')
-    if (error.response) console.error(`Could not determine if user ${username} is allowed to use topic ${topic}: ${error.response.data.message}`)
+    if (error.response) console.error(`Could not determine if user ${username} is allowed to use topic ${topic}: ${error.response.data}`)
     else console.error(error)
   })
 })
