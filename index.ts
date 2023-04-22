@@ -1,12 +1,13 @@
-const express = require("express")
-require("express-async-errors")
-const dotenv = require("dotenv")
-const axios = require("axios")
-const apiMetrics = require("prometheus-api-metrics")
-const cors = require("cors")
-const { version, author } = require("./package.json")
-const createHttpError = require("http-errors")
-const jwt = require("jsonwebtoken")
+import express from "express"
+import "express-async-errors"
+import dotenv from "dotenv"
+import axios from "axios"
+import apiMetrics from "prometheus-api-metrics"
+import cors from "cors"
+import { version, author } from "./package.json"
+import createHttpError from "http-errors"
+import jwt from "jsonwebtoken"
+import { Request, Response, NextFunction } from "express"
 
 dotenv.config()
 
@@ -34,14 +35,14 @@ app.get("/", (req, res) => {
   })
 })
 
-const get_user_using_token = (token) => {
+const get_user_using_token = (token: string) => {
   const headers = { Authorization: `Bearer ${token}` }
   return axios.get(IDENTIFICATION_URL, { headers })
 }
 
-const login = (credentials) => axios.post(LOGIN_URL, credentials)
+const login = (credentials: any) => axios.post(LOGIN_URL, credentials)
 
-const user_is_superuser = (user) =>
+const user_is_superuser = (user: any) =>
   user.admin ?? user.isAdmin ?? user.administrator ?? user.isAdministrator
 
 app.post("/getuser", async (req, res, next) => {
@@ -63,7 +64,7 @@ app.post("/superuser", async (req, res) => {
   const { username: token } = req.body
 
   if (!jwt.decode(token)) throw "Username is not token"
-  const { data: user } = await get_user_using_token(username)
+  const { data: user } = await get_user_using_token(token)
   if (!user_is_superuser(user))
     throw createHttpError(403, `User is not administrator`)
   res.send("OK")
@@ -100,7 +101,7 @@ app.post("/aclcheck", async (req, res) => {
 })
 
 // Express error handler
-app.use((error, req, res, next) => {
+app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   console.error(error)
   let { statusCode = 500, message = error } = error
   if (isNaN(statusCode) || statusCode > 600) statusCode = 500
