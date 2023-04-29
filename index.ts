@@ -87,12 +87,8 @@ app.post("/aclcheck", async (req, res) => {
     actualUsername = username
   }
 
-  // Only allow users to manipulate topics that contain their username
-  // NOTE: topic were privosuly starting with '/', which is bad practice
-  if (
-    !topic.startsWith(`${actualUsername}/`) &&
-    !topic.startsWith(`/${actualUsername}/`)
-  )
+  // Only allow users to manipulate their own topics
+  if (!topic.startsWith(`${actualUsername}/`))
     throw createHttpError(
       403,
       `User ${actualUsername} is not allowed to use topic ${topic}`
