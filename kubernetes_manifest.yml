@@ -13,13 +13,13 @@ spec:
         app: ${APPLICATION_NAME}
     spec:
       containers:
-      - name: ${APPLICATION_NAME}
-        image: ${CONTAINER_IMAGE_TAGGED}
-        ports:
-        - containerPort: 80
-        envFrom:
-        - secretRef:
-           name: environment
+        - name: ${APPLICATION_NAME}
+          image: ${CONTAINER_IMAGE_TAGGED}
+          ports:
+            - containerPort: 80
+          envFrom:
+            - secretRef:
+                name: environment
 ---
 apiVersion: v1
 kind: Service
@@ -30,25 +30,4 @@ spec:
   selector:
     app: ${APPLICATION_NAME}
   ports:
-  - port: 80
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: ${APPLICATION_NAME}
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-spec:
-  tls:
-  - hosts:
-    - auth.mqtt.iot.maximemoreillon.com
-    secretName: ${APPLICATION_NAME}
-  rules:
-  - host: auth.mqtt.iot.maximemoreillon.com
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: ${APPLICATION_NAME}
-          servicePort: 80
+    - port: 80
