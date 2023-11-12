@@ -2,7 +2,7 @@ import express from "express"
 import "express-async-errors"
 import dotenv from "dotenv"
 import axios from "axios"
-import apiMetrics from "prometheus-api-metrics"
+import promBundle from "express-prom-bundle"
 import cors from "cors"
 import { version, author } from "./package.json"
 import createHttpError from "http-errors"
@@ -17,12 +17,13 @@ const {
   LOGIN_URL = "http://user-manager/auth/login",
 } = process.env
 
+const promOptions = { includeMethod: true, includePath: true }
+
 const app = express()
 
 app.use(cors())
 app.use(express.json())
-app.use(apiMetrics())
-
+app.use(promBundle(promOptions))
 app.get("/", (req, res) => {
   res.send({
     application_name: "Mosquitto Auth Gateway",
